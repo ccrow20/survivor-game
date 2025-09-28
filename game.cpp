@@ -5,7 +5,7 @@ game::game() : Player(), playerAttack(Player), Grid(64) {
     camera.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     camera.setCenter(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
 
-    for (int i = 0; i < 300; i++) {
+    for (int i = 0; i < 100; i++) {
         Goons.emplace_back(Player);
     }
 }
@@ -106,14 +106,22 @@ void game::collision(float dt) {
         }
     }
 
-    sf::Vector2f attackPos = playerAttack.getPosition();
-    cell = Grid.worldToCell(attackPos);
-    candidates.clear();
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            sf::Vector2i neighbor(cell.x + dx, cell.y + dy);
+    sf::FloatRect attackBounds = playerAttack.getBounds();
+    sf::Vector2i minCell = Grid.worldToCell({attackBounds.left, attackBounds.top});
+    sf::Vector2i maxCell = Grid.worldToCell({attackBounds.left + attackBounds.width, attackBounds.top + attackBounds.height});
 
-            auto local = Grid.query(neighbor);
+    minCell.x -= 1;
+    minCell.y -= 1;
+    maxCell.x += 1;
+    maxCell.y += 1;
+
+
+    candidates.clear();
+    for (int y = minCell.y; y <= maxCell.y; y++) {
+        for (int x = minCell.x; x <= maxCell.x; x++) {
+            sf::Vector2i cell(x, y);
+
+            auto local = Grid.query(cell);
             candidates.insert(candidates.end(), local.begin(), local.end());
         }
     }
