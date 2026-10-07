@@ -39,9 +39,8 @@ public:
   std::vector<EntityID> query(sf::Vector2i cell) const;
   sf::Vector2i worldToCell(sf::Vector2f pos) const;
 
-  // Everything in the cell containing `pos` plus the surrounding ring of cells.
   std::vector<EntityID> queryNearby(sf::Vector2f pos) const;
-  // Everything in the cells overlapping `area`, padded by one cell on every side.
+
   std::vector<EntityID> queryArea(const sf::FloatRect& area) const;
 
 private:

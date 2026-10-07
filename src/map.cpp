@@ -4,6 +4,7 @@
 
 map::map() : mapHeight(0), mapWidth(0), defaultTile{0, false, config::GROUND_IMAGE} {
     setTileType('#', {0, true, config::WALL_IMAGE});
+    setTileType('~', {0, false, config::LAVA_IMAGE, config::LAVA_DAMAGE_PER_SECOND});
 }
 
 void map::setDefaultTile(TileInfo info) {
@@ -24,7 +25,6 @@ bool map::load() {
     baseImage = defaultTile.image;
     const int tile = config::TILE_SIZE;
 
-    // Finds (loading on first use) the layer for an image; null if it can't load.
     auto getLayer = [&](const std::string& path) -> Layer* {
         auto it = layers.find(path);
         if (it == layers.end()) {
@@ -37,7 +37,6 @@ bool map::load() {
         return &it->second;
     };
 
-    // Appends one tile-sized quad at grid cell (i, j); false if the index is outside the image.
     auto addQuad = [&](Layer& layer, const std::string& path, int tilesetIndex, int i, int j) {
         int tilesPerRow = std::max(1, static_cast<int>(layer.texture.getSize().x) / tile);
         int tu = tilesetIndex % tilesPerRow;
@@ -72,7 +71,6 @@ bool map::load() {
             Layer* layer = getLayer(imagePath);
             bool ok = layer != nullptr;
 
-            // non-floor tiles show floor beneath making tiles with transparency look good
             bool isFloor = imagePath == baseImage && info.tilesetIndex == defaultTile.tilesetIndex;
             if (ok && !isFloor) {
                 Layer* floor = getLayer(baseImage);
@@ -135,6 +133,18 @@ bool map::collides(sf::Vector2f pos, sf::Vector2f size) const {
     return false;
 }
 
+float map::damageAt(sf::Vector2f pos, sf::Vector2f size) const {
+    float damage = 0.f;
+    for (int y = toTile(pos.y); y <= toTile(pos.y + size.y); ++y) {
+        for (int x = toTile(pos.x); x <= toTile(pos.x + size.x); ++x) {
+            if (x >= 0 && y >= 0 && x < mapWidth && y < mapHeight) {
+                damage = std::max(damage, tileInfo(mapTiles[y][x]).damagePerSecond);
+            }
+        }
+    }
+    return damage;
+}
+
 int map::toTile(float pos) {
     return static_cast<int>(pos) / config::TILE_SIZE;
 }
@@ -154,7 +164,7 @@ std::istream& operator>>(std::istream& in, map& s) {
 }
 
 void map::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    // The floor layer goes first so everything else is drawn on top of it.
+
     auto drawLayer = [&](const Layer& layer) {
         sf::RenderStates layerStates = states;
         layerStates.texture = &layer.texture;

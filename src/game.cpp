@@ -13,7 +13,7 @@ game::game()
 }
 
 void game::run() {
-    loadLevel("map1.txt");
+    loadLevel("assets/maps/map1.txt");
 
     while (window.isOpen()) {
         processEvents();
@@ -35,11 +35,17 @@ void game::processEvents() {
         if (event.type == sf::Event::Closed) {
             window.close();
         }
+        else if (event.type == sf::Event::Resized) {
+            camera.setSize(static_cast<float>(event.size.width), static_cast<float>(event.size.height));
+        }
     }
 }
 
 void game::update(float dt) {
     Player.update(dt, Map);
+    if (Player.getHealth() <= 0.f) {
+        onPlayerHit();
+    }
     for (auto& playerAttack : playerAttacks) {
         playerAttack.update(dt, Player.getPosition() + config::ATTACK_OFFSET);
     }
@@ -72,20 +78,33 @@ void game::rebuildSpatialHash() {
 
 void game::collision(float dt) {
     rebuildSpatialHash();
-    checkPlayerEnemyCollisions();
+    checkPlayerEnemyCollisions(dt);
     checkAttackEnemyCollisions();
     separateEnemies(dt);
 }
 
-void game::checkPlayerEnemyCollisions() {
+void game::checkPlayerEnemyCollisions(float dt) {
+    bool touching = false;
     for (const EntityID& id : Grid.queryNearby(Player.getPosition())) {
         if (id.type != EntityType::EnemyType)
             continue;
 
         const Enemy& goon = spawnManager[id.index];
         if (goon.getActiveState() && Player.getBounds().intersects(goon.getBounds())) {
-            onPlayerHit();
+            touching = true;
+            break;
         }
+    }
+
+    if (!touching) {
+        contactCooldown = 0.f;
+        return;
+    }
+
+    contactCooldown -= dt;
+    if (contactCooldown <= 0.f) {
+        Player.takeDamage(config::ENEMY_CONTACT_DAMAGE);
+        contactCooldown = config::ENEMY_CONTACT_INTERVAL;
     }
 }
 

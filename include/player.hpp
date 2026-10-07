@@ -15,18 +15,20 @@ public:
   int getLevel() const;
   sf::Vector2f getPosition() const;
   sf::FloatRect getBounds() const;
+  float getHealth() const;
+  void takeDamage(float amount);
 
 protected:
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
   sf::Vector2f readInput();
-  // Moves one axis at a time so the player can slide along walls.
+
   void moveAxis(sf::Vector2f delta, const map& level);
 
   Direction lastKeyPress;
   sf::RectangleShape block;
   int Level;
-  int Health;
+  float Health;
   float Speed;
 };

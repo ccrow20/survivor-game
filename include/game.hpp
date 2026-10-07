@@ -27,7 +27,7 @@ private:
 
   void rebuildSpatialHash();
   void collision(float dt);
-  void checkPlayerEnemyCollisions();
+  void checkPlayerEnemyCollisions(float dt);
   void checkAttackEnemyCollisions();
   void separateEnemies(float dt);
   void onPlayerHit();
@@ -42,4 +42,5 @@ private:
   map Map;
   sf::Clock clock;
   SpatialHash Grid;
+  float contactCooldown = 0.f;
 };

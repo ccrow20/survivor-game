@@ -1,5 +1,7 @@
 #include "player.hpp"
 
+#include <algorithm>
+
 player::player() {
     block.setSize(sf::Vector2f(30, 60));
     block.setFillColor(sf::Color::Green);
@@ -7,6 +9,7 @@ player::player() {
     lastKeyPress = RIGHT;
     Speed = 400;
     Level = 2;
+    Health = config::PLAYER_MAX_HEALTH;
 }
 
 void player::update(float deltaTime, const map& level) {
@@ -14,6 +17,8 @@ void player::update(float deltaTime, const map& level) {
 
     moveAxis(sf::Vector2f(movement.x * deltaTime, 0.f), level);
     moveAxis(sf::Vector2f(0.f, movement.y * deltaTime), level);
+
+    takeDamage(level.damageAt(block.getPosition(), block.getSize()) * deltaTime);
 }
 
 sf::Vector2f player::readInput() {
@@ -57,6 +62,14 @@ int player::getLevel() const {
     return Level;
 }
 
+void player::takeDamage(float amount) {
+    Health -= amount;
+}
+
+float player::getHealth() const {
+    return Health;
+}
+
 sf::Vector2f player::getPosition() const {
     return block.getPosition();
 }
@@ -67,4 +80,19 @@ sf::FloatRect player::getBounds() const {
 
 void player::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     target.draw(block, states);
+
+    sf::Vector2f pos = block.getPosition();
+    float width = block.getSize().x;
+    float fraction = std::clamp(Health / config::PLAYER_MAX_HEALTH, 0.f, 1.f);
+
+    sf::RectangleShape back(sf::Vector2f(width, config::HEALTHBAR_HEIGHT));
+    back.setPosition(pos.x, pos.y + block.getSize().y + config::HEALTHBAR_OFFSET);
+    back.setFillColor(sf::Color(60, 0, 0));
+
+    sf::RectangleShape fill(sf::Vector2f(width * fraction, config::HEALTHBAR_HEIGHT));
+    fill.setPosition(back.getPosition());
+    fill.setFillColor(sf::Color::Red);
+
+    target.draw(back, states);
+    target.draw(fill, states);
 }

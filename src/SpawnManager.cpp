@@ -14,7 +14,7 @@ SpawnManager::SpawnManager(std::size_t poolSize, int ambientTarget)
     : pool(poolSize), active(0), ambientTarget(ambientTarget), nextSpawnerId(0),
       rng(std::random_device{}()) {
     freeSlots.reserve(poolSize);
-    // Reversed so the lowest index is handed out first.
+
     for (int i = static_cast<int>(poolSize) - 1; i >= 0; i--) {
         freeSlots.push_back(i);
     }
@@ -32,8 +32,6 @@ void SpawnManager::update(float dt, sf::Vector2f playerPos) {
     updateSpawners(dt);
 }
 
-// Enemies deactivate themselves when their health runs out; hand those slots
-// back to the pool.
 void SpawnManager::reclaimDead(const std::vector<bool>& wasActive) {
     for (std::size_t i = 0; i < pool.size(); i++) {
         if (wasActive[i] && !pool[i].getActiveState()) {
@@ -56,7 +54,7 @@ void SpawnManager::updateSpawners(float dt) {
         while (spawner.timer >= spawner.interval) {
             spawner.timer -= spawner.interval;
             if (!acquire(scatter(spawner.position, spawner.radius))) {
-                // Pool is full: drop the backlog instead of bursting later.
+
                 spawner.timer = 0.f;
                 break;
             }
@@ -164,7 +162,6 @@ void SpawnManager::draw(sf::RenderTarget& target, sf::RenderStates states) const
     }
 }
 
-// A point on a ring around `center`, pushed away from it on both axes.
 sf::Vector2f SpawnManager::ringPosition(sf::Vector2f center) {
     std::uniform_int_distribution<int> dist(-RING_JITTER, RING_JITTER);
     int xOffset = dist(rng);

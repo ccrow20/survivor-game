@@ -11,7 +11,7 @@ public:
   void update(float deltatime, sf::Vector2f position);
   bool getActiveState() const;
   int getDamage() const;
-  // Records `id` as hit this swing; false if it was already hit.
+
   bool registerHit(const EntityID& id);
   sf::Vector2f getPosition() const;
   sf::FloatRect getBounds() const;
