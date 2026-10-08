@@ -5,6 +5,12 @@
 player::player() {
     block.setSize(sf::Vector2f(30, 60));
     block.setFillColor(sf::Color::Green);
+    Speed = 400;
+    Level = 2;
+    reset();
+}
+
+void player::reset() {
     block.setPosition(config::WINDOW_WIDTH / 2, config::WINDOW_HEIGHT / 2);
     lastKeyPress = RIGHT;
     Speed = 400;

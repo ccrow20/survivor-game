@@ -1,5 +1,7 @@
 #include "enemy.hpp"
 
+#include "config.hpp"
+
 namespace {
 
 constexpr int MAX_HEALTH = 100;
@@ -89,8 +91,23 @@ void Enemy::Slide(Enemy& other) {
 void Enemy::activate(sf::Vector2f position) {
     health = MAX_HEALTH;
     active = true;
+    contactCooldown = 0.f;
     enemyHitBox.setPosition(position);
     previousPos = currentPos = position;
+}
+
+bool Enemy::updateContact(bool touching, float deltatime) {
+    if (!active || !touching) {
+        contactCooldown = 0.f;
+        return false;
+    }
+
+    contactCooldown -= deltatime;
+    if (contactCooldown > 0.f)
+        return false;
+
+    contactCooldown = config::ENEMY_CONTACT_INTERVAL;
+    return true;
 }
 
 void Enemy::deactivate() {

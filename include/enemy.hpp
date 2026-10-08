@@ -17,6 +17,8 @@ public:
 
   void activate(sf::Vector2f position);
 
+  bool updateContact(bool touching, float deltatime);
+
   void deactivate();
   bool getActiveState() const;
   sf::Vector2f getVelocity(float deltatime) const;
@@ -33,4 +35,5 @@ private:
   sf::Vector2f previousPos, currentPos;
   int health;
   bool active;
+  float contactCooldown = 0.f;
 };

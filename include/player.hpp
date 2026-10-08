@@ -17,6 +17,7 @@ public:
   sf::FloatRect getBounds() const;
   float getHealth() const;
   void takeDamage(float amount);
+  void reset();
 
 protected:
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
